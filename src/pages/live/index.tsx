@@ -1,17 +1,27 @@
 import React, { useState } from 'react';
 import { Component, Controller, Middleware, redirect, useComponentWithMethod, useParam, inject, useComponent } from 'slox';
-import { IndexMiddleware } from '../../middlewares/index.middleware';
 import { LayoutContainer } from '@components/common';
 import { Affix, Col, Row, Result, Button } from 'antd';
-import { Switcher, ComprehensiveDataTrendAnalysis, DimensionDetailedDataAnalysis, Heat } from './components';
 import 'antd/es/radio/style/index';
 import styles from './index.module.less';
+import { CopyRight } from '../../components';
+import { 
+  Switcher, 
+  ComprehensiveDataTrendAnalysis, 
+  DimensionDetailedDataAnalysis, 
+  Heat, 
+  Comment, 
+  Barrage,
+  Reply,
+} from './components';
 
 @Component()
 @Controller('/live/:id(\\d+)')
-@Middleware(IndexMiddleware)
 export default class LiveController {
   @inject(Heat) private readonly Heat: Heat;
+  @inject(Comment) private readonly Comment: Comment;
+  @inject(Barrage) private readonly Barrage: Barrage;
+  @inject(Reply) private readonly Reply: Reply;
   @inject(ComprehensiveDataTrendAnalysis) private readonly ComprehensiveDataTrendAnalysis: ComprehensiveDataTrendAnalysis;
   @inject(DimensionDetailedDataAnalysis) private readonly DimensionDetailedDataAnalysis: DimensionDetailedDataAnalysis;
   private readonly renders = {
@@ -36,7 +46,7 @@ export default class LiveController {
         </Col>
         <Col span={24}><Affix className={styles.affix} offsetTop={0}><Switcher value={type} onChange={setType}></Switcher></Affix></Col>
         <Col span={24}><Renderer id={id} /></Col>
-        <Col span={24}>版权信息</Col>
+        <Col span={24}><CopyRight /></Col>
       </Row>
     </LayoutContainer>
   }
@@ -53,7 +63,14 @@ export default class LiveController {
   }
 
   private renderWithInteraction(props: React.PropsWithoutRef<{ id: number }>) {
-    return <div>interaction</div>
+    const Comment = useComponent(this.Comment);
+    const Barrage = useComponent(this.Barrage);
+    const Reply = useComponent(this.Reply);
+    return <Row gutter={[24, 24]}>
+      <Col span={24}><Comment id={props.id} /></Col>
+      <Col span={12}><Barrage id={props.id} /></Col>
+      <Col span={12}><Reply id={props.id} /></Col>
+    </Row>
   }
 
   private renderWithProducts(props: React.PropsWithoutRef<{ id: number }>) {

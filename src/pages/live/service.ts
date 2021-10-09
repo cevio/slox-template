@@ -1,10 +1,10 @@
-import DesktopRequest from '@components/common/es/desktop-request';
 import { useCallback } from 'react';
 import { Service } from 'slox';
 import type { TLiveBaseDataState } from './interface';
+import { LiveChecker } from '@components/common';
 
 @Service()
-export class LiveService extends DesktopRequest {
+export class LiveService extends LiveChecker.Service {
   public comprehensiveDataTrendAnalysis(id: number) {
     return this.useGet<TLiveBaseDataState[]>({
       url: `/live/monitor/${id}/count`,

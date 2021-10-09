@@ -1,12 +1,10 @@
-import { Col, message, Row, Spin, Empty, Typography, Space, Tooltip } from 'antd';
-import React, { Fragment, useEffect, useMemo } from 'react';
-import { Component, useComponentWithMethod } from 'slox';
-import { LiveService } from '../../service';
-import { AreaConfig, Area } from '@ant-design/charts';
-import dayjs from 'dayjs';
+import { Spin, Space, Tooltip } from 'antd';
+import React, { Fragment, useState } from 'react';
+import { Component, useComponentWithMethod, inject, useComponent } from 'slox';
 import styles from './index.module.less';
 import classnames from 'classnames';
 import { QuestionCircleFilled } from '@ant-design/icons';
+import { ChannelChart } from '../channel-chart';
 
 interface TConfig {
   title: string,
@@ -19,7 +17,8 @@ interface TConfig {
 }
 
 @Component()
-export class DimensionDetailedDataAnalysis extends LiveService {
+export class DimensionDetailedDataAnalysis {
+  @inject(ChannelChart) private readonly ChannelChart: ChannelChart;
   private readonly configs: TConfig[] = [
     {
       title:"进入直播间趋势",
@@ -57,63 +56,8 @@ export class DimensionDetailedDataAnalysis extends LiveService {
   }
 
   private channel(props: React.PropsWithoutRef<TConfig & { id: number }>) {
-    const [invoke, { state, loading }, setFeedback] = this.dimensionDetailedDataAnalysis(props.id);
-    const maxInfo = useMemo(() => {
-      const chunks = state.slice().sort((a, b) => { return b.cnt - a.cnt });
-      if (chunks.length) return chunks[0];
-      return { time: null, cnt: 0 }
-    }, [state]);
-    const source = useMemo(() => {
-      return state.map(s => {
-        return {
-          time: dayjs(s.time).format('HH:mm'),
-          cnt: s.cnt
-        }
-      })
-    }, [state]);
-    const configs = useMemo<AreaConfig>(() => {
-      return {
-        data: source,
-        animation: false,
-        xField: 'time',
-        yField: 'cnt',
-        xAxis: {
-          label: {
-            autoHide: true,
-            autoRotate: false,
-          },
-        },
-        areaStyle: function areaStyle() {
-          return { fill: `l(270) 0:#ffffff 0.5:${props.color} 1:${props.color}` };
-        },
-        meta: {
-          time: { alias: '时间' },
-          cnt: { alias: props.subtitle },
-        },
-        color: props.color,
-        smooth:true,
-        yAxis: {
-          // grid 配置水平线的样式 下面配置为虚线如果要为实线，不用配置
-         grid: {
-           line: {
-             style: {
-               stroke: '#EBEEF5',
-               lineDash: [4, 5],
-             },
-           },
-         },
-       },
-       // @ts-ignore
-       xAxis: {
-         line: { style: { stroke: '#DCDFE6' } },
-         tickLine:null
-       },
-      };
-    }, [source])
-    useEffect(() => setFeedback({
-      failed: e => message.error(e.message),
-    }), [setFeedback]);
-    useEffect(() => invoke(props.type), [props.id, props.type]);
+    const [loading, setLoading] = useState(false);
+    const ChannelChart = useComponent(this.ChannelChart);
     return <Fragment>
       <div className="com-lazy-card-head">
         <Space>
@@ -123,18 +67,7 @@ export class DimensionDetailedDataAnalysis extends LiveService {
       </div>
       <div className="com-lazy-card-body">
         <Spin spinning={loading}>
-          {
-            state.length
-              ? <Row gutter={[24, 24]}>
-                  <Col span={6}>
-                    <Typography.Paragraph>峰值为</Typography.Paragraph>
-                    <Typography.Paragraph className={styles.max}><strong style={{ color: props.color }}>{maxInfo.cnt}</strong> <sub>{props.unit}</sub></Typography.Paragraph>
-                    <Typography.Text className={styles.text}>出现在 <strong>{dayjs(maxInfo.time).format('HH:mm')}</strong></Typography.Text>
-                  </Col>
-                  <Col span={18}><Area {...configs} height={120}/></Col>
-                </Row>
-              : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-          }
+          <ChannelChart id={props.id} subtitle={props.subtitle} unit={props.unit} color={props.color} type={props.type} onLoading={setLoading} />
         </Spin>
       </div>
     </Fragment>
