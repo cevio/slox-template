@@ -38,7 +38,7 @@ export default defineConfig({
         changeOrigin: true,
         target: online ? 'http://api.znrank.com' : 'http://192.168.31.202:8000',
         headers: {
-          'xc-token': online ? 'f7e48d92-a27d-4a84-a111-1702ae9a0490' : '035fba9e-5b69-332e-afdc-b6e79fff2bcd',
+          'xc-token': online ? '2a4c1a11-d9d5-4d7f-9c19-7d88e977b036' : '2a4c1a11-d9d5-4d7f-9c19-7d88e977b036',
         }
       }
     }
